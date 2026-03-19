@@ -112,3 +112,39 @@ BEGIN
     einmaleins(20, 20);
 END;
 /
+
+-- ===================================================
+-- Zeitmessung
+-- ===================================================
+DECLARE
+    v_start   TIMESTAMP;
+    v_ende    TIMESTAMP;
+    v_dauer   INTERVAL DAY TO SECOND(6);
+    v_zaehler INTEGER := 1;
+    v_buf     VARCHAR2(32000) := '';
+BEGIN
+    v_start := SYSTIMESTAMP;
+
+    WHILE v_zaehler <= 10000
+        LOOP
+            v_buf := v_buf ||
+                     dbms_random.string('x', 10) || '   ' ||
+                     TRUNC(dbms_random.value(1, 99999)) || CHR(10);
+
+            IF MOD(v_zaehler, 100) = 0 THEN
+                dbms_output.put_line(v_buf);
+                v_buf := '';
+            END IF;
+
+            v_zaehler := v_zaehler + 1;
+        END LOOP;
+
+    v_ende  := SYSTIMESTAMP;
+    v_dauer := v_ende - v_start;
+
+    dbms_output.put_line('-------------------------------');
+    dbms_output.put_line('Start:  ' || TO_CHAR(v_start, 'HH24:MI:SS.FF3'));
+    dbms_output.put_line('Ende:   ' || TO_CHAR(v_ende,  'HH24:MI:SS.FF3'));
+    dbms_output.put_line('Dauer:  ' || v_dauer);
+END;
+/
