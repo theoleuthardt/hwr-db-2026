@@ -143,8 +143,86 @@ BEGIN
     v_dauer := v_ende - v_start;
 
     dbms_output.put_line('-------------------------------');
+    dbms_output.put_line('CONSOLE (dbms_output):');
     dbms_output.put_line('Start:  ' || TO_CHAR(v_start, 'HH24:MI:SS.FF3'));
     dbms_output.put_line('Ende:   ' || TO_CHAR(v_ende,  'HH24:MI:SS.FF3'));
     dbms_output.put_line('Dauer:  ' || v_dauer);
+END;
+/
+
+-- ===================================================
+-- Vergleich: CONSOLE vs INSERT - was ist schneller?
+-- ===================================================
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE Test_Insert';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN RAISE; END IF;
+END;
+/
+CREATE TABLE Test_Insert
+(
+    id   NUMBER,
+    info VARCHAR2(50),
+    zahl NUMBER
+);
+
+DECLARE
+    v_start_con   TIMESTAMP;
+    v_dauer_con   INTERVAL DAY TO SECOND(6);
+    v_start_ins   TIMESTAMP;
+    v_dauer_ins   INTERVAL DAY TO SECOND(6);
+    v_zaehler     INTEGER;
+    v_buf         VARCHAR2(32000) := '';
+BEGIN
+    -- Test 1: CONSOLE (dbms_output)
+    v_zaehler := 1;
+    v_start_con := SYSTIMESTAMP;
+
+    WHILE v_zaehler <= 10000
+        LOOP
+            v_buf := v_buf ||
+                     dbms_random.string('x', 10) || '   ' ||
+                     TRUNC(dbms_random.value(1, 99999)) || CHR(10);
+
+            IF MOD(v_zaehler, 100) = 0 THEN
+                dbms_output.put_line(v_buf);
+                v_buf := '';
+            END IF;
+
+            v_zaehler := v_zaehler + 1;
+        END LOOP;
+
+    v_dauer_con := SYSTIMESTAMP - v_start_con;
+
+    -- Test 2: INSERT in Tabelle
+    v_start_ins := SYSTIMESTAMP;
+
+    FOR i IN 1..10000
+        LOOP
+            INSERT INTO Test_Insert VALUES (i, dbms_random.string('x', 10), TRUNC(dbms_random.value(1, 99999)));
+        END LOOP;
+
+    v_dauer_ins := SYSTIMESTAMP - v_start_ins;
+
+    -- Vergleich ausgeben
+    dbms_output.put_line('');
+    dbms_output.put_line('=======================================');
+    dbms_output.put_line('  VERGLEICH: CONSOLE vs INSERT');
+    dbms_output.put_line('  Anzahl Zeilen: 10 000');
+    dbms_output.put_line('=======================================');
+    dbms_output.put_line('  CONSOLE (dbms_output): ' || v_dauer_con);
+    dbms_output.put_line('  INSERT  (Tabelle):     ' || v_dauer_ins);
+    dbms_output.put_line('=======================================');
+
+    IF v_dauer_con < v_dauer_ins THEN
+        dbms_output.put_line('  --> CONSOLE ist schneller');
+    ELSIF v_dauer_ins < v_dauer_con THEN
+        dbms_output.put_line('  --> INSERT ist schneller');
+    ELSE
+        dbms_output.put_line('  --> Gleich schnell');
+    END IF;
+
+    dbms_output.put_line('=======================================');
 END;
 /
