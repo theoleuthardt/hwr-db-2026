@@ -83,3 +83,32 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Heute ist ' || v_name || ' (Tag-Nr: ' || v_tag_nr || ')');
 END;
 /
+
+-- ===================================================
+-- 1x1 Tabelle ausgeben
+-- ===================================================
+CREATE OR REPLACE PROCEDURE einmaleins(p_max_zeile IN INTEGER, p_max_spalte IN INTEGER)
+    IS
+    zeile  INTEGER;
+    spalte INTEGER;
+BEGIN
+    dbms_output.put_line('');
+    zeile := 1;
+    WHILE zeile <= p_max_zeile
+        LOOP
+            spalte := 1;
+            WHILE spalte <= p_max_spalte
+                LOOP
+                    dbms_output.put(LPAD(zeile * spalte, 5));
+                    spalte := spalte + 1;
+                END LOOP;
+            dbms_output.put_line('');
+            zeile := zeile + 1;
+        END LOOP;
+END;
+/
+
+BEGIN
+    einmaleins(20, 20);
+END;
+/
