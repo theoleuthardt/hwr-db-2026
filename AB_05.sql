@@ -10,7 +10,7 @@ create table Action_Tab
     ActID varchar2(12),
     Strt  timestamp,
     Ende  timestamp,
-    Dauer Interval Day to second(3)  -- vielleicht zuerst ohne Dauer
+    Dauer Interval Day to second(6)
 );
 -- select * from Action_Tab;
 
@@ -24,8 +24,12 @@ end;
 --
 create or replace procedure Action_Log_Calc(ID varchar)
     is
-    t TIMESTAMP := localtimestamp;
+    t TIMESTAMP(6);
 begin
+    for i in 1..10000 loop
+        insert into TBig values (i, DBMS_RANDOM.VALUE(0, 10000), DBMS_RANDOM.STRING('A', 40));
+    end loop;
+    t := localtimestamp;
     update Action_Tab set Ende = t, Dauer = t - Strt where ActID = ID;
 end;
 /
@@ -34,17 +38,17 @@ create or replace procedure Action_Log_Show(ID varchar)
     is
     v_strt  TIMESTAMP;
     v_ende  TIMESTAMP;
-    v_dauer INTERVAL DAY TO SECOND(3);
+    v_dauer INTERVAL DAY TO SECOND(6);
 begin
     select Strt, Ende, Dauer into v_strt, v_ende, v_dauer
     from Action_Tab where ActID = ID;
 
     DBMS_OUTPUT.PUT_LINE('   ID: ' || ID);
-    DBMS_OUTPUT.PUT_LINE('Anfang: ' || TO_CHAR(v_strt, 'DD.MM.YYYY HH24:MI:SS,FF3'));
-    DBMS_OUTPUT.PUT_LINE('  Ende: ' || TO_CHAR(v_ende, 'DD.MM.YYYY HH24:MI:SS,FF3'));
+    DBMS_OUTPUT.PUT_LINE('Anfang: ' || TO_CHAR(v_strt, 'DD.MM.YYYY HH24:MI:SS,FF6'));
+    DBMS_OUTPUT.PUT_LINE('  Ende: ' || TO_CHAR(v_ende, 'DD.MM.YYYY HH24:MI:SS,FF6'));
     DBMS_OUTPUT.PUT_LINE(' Dauer: ' || TO_CHAR(EXTRACT(HOUR FROM v_dauer), 'FM00') || ':'
         || TO_CHAR(EXTRACT(MINUTE FROM v_dauer), 'FM00') || ':'
-        || TO_CHAR(EXTRACT(SECOND FROM v_dauer), 'FM00.000'));
+        || TO_CHAR(EXTRACT(SECOND FROM v_dauer), 'FM00.000000'));
 end;
 /
 
