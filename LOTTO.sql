@@ -1,3 +1,5 @@
+-- noinspection SqlWithoutWhereForFile
+
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE s_leuthardt23.kunden CASCADE CONSTRAINTS';
 EXCEPTION WHEN OTHERS THEN NULL;
